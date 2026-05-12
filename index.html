@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHADOW SHOP - VIP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #00f2ff; --bg: #0b0f19; --card: #16213e; --text: #ffffff; --accent: #7b2cbf; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; }
+        .auth-container { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .auth-box { background: var(--card); padding: 30px; border-radius: 20px; border: 2px solid var(--primary); width: 90%; max-width: 350px; text-align: center; }
+        .header { background: var(--card); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 100; }
+        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card); transition: 0.4s; z-index: 1000; padding: 20px; border-right: 1px solid var(--primary); }
+        .sidebar.active { left: 0; }
+        .menu-item { padding: 15px; cursor: pointer; border-bottom: 1px solid #2d334a; display: block; color: white; text-decoration: none; }
+        .input-cyan { width: 100%; padding: 12px; margin: 10px 0; background: #0b0f19; border: 1px solid var(--primary); color: white; border-radius: 8px; outline: none; }
+        .btn-cyan { width: 100%; padding: 12px; background: var(--primary); border: none; font-weight: bold; cursor: pointer; border-radius: 8px; color: #0b0f19; transition: 0.3s; }
+        .btn-cyan:hover { opacity: 0.8; box-shadow: 0 0 15px var(--primary); }
+        .container { padding: 15px; max-width: 800px; margin: auto; }
+        .user-panel { background: var(--card); border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--primary); }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .stat-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #2d334a; }
+        .card { background: var(--card); border-radius: 15px; margin-bottom: 20px; border: 1px solid #2d334a; overflow: hidden; }
+        .card img { width: 100%; height: 180px; object-fit: cover; background: #333; }
+        .p-info { padding: 15px; }
+        .price-tag { color: var(--primary); font-weight: bold; font-size: 1.2rem; margin: 10px 0; display: block; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-ui" class="auth-container">
+        <div class="auth-box">
+            <h2 id="auth-title" style="color:var(--primary)">ĐĂNG NHẬP</h2>
+            <div id="reg-fields" style="display:none"><input type="email" id="email" class="input-cyan" placeholder="Nhập Email"></div>
+            <input type="text" id="user" class="input-cyan" placeholder="Tên tài khoản">
+            <input type="password" id="pass" class="input-cyan" placeholder="Mật khẩu">
+            <button class="btn-cyan" onclick="handleAuth()">XÁC NHẬN</button>
+            <p id="toggle-text" onclick="toggleAuth()" style="font-size:13px; cursor:pointer; margin-top:15px; color: #94a3b8;">Chưa có tài khoản? Đăng ký</p>
+        </div>
+    </div>
+
+    <div id="main-app" style="display:none">
+        <div class="header">
+            <i class="fas fa-bars" onclick="toggleSidebar()" style="font-size:24px; color:var(--primary); cursor:pointer"></i>
+            <div style="font-weight:bold; letter-spacing: 2px;">SHADOW SHOP</div>
+            <div id="top-balance" style="color: var(--primary); font-weight: bold;">0đ</div>
+        </div>
+
+        <div id="sidebar" class="sidebar">
+            <h3 style="color:var(--primary)">MENU</h3>
+            <a href="#" class="menu-item" onclick="showPage('home')"><i class="fas fa-home"></i> Trang Chủ</a>
+            <a href="#" class="menu-item" onclick="showPage('napthe')"><i class="fas fa-credit-card"></i> Nạp Thẻ</a>
+            <div id="admin-menu" style="display:none"><a href="#" class="menu-item" onclick="showPage('admin-panel')" style="color:var(--primary)"><i class="fas fa-user-shield"></i> ADMIN</a></div>
+            <a href="#" class="menu-item" onclick="logout()" style="color:#ff4d4d;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+        </div>
+
+        <div class="container" id="page-home">
+            <div class="user-panel">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <div style="width: 50px; height: 50px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #0b0f19;"><i class="fas fa-user"></i></div>
+                    <div><div id="display-name" style="font-weight: bold; font-size: 18px;">Khách</div><div id="user-rank" style="font-size: 12px; color: #94a3b8;">Thành viên</div></div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-box"><div style="font-size: 11px;">SỐ DƯ</div><div id="panel-balance" style="color: var(--primary); font-weight: bold;">0đ</div></div>
+                    <div class="stat-box"><div style="font-size: 11px;">TỔNG NẠP</div><div id="total-recharge" style="color: #ff00ff; font-weight: bold;">0đ</div></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="https://via.placeholder.com/400x200/16213e/00f2ff?text=ZYGAME" alt="Zygame">
+                <div class="p-info">
+                    <h3>Zygame VIP</h3>
+                    <select id="zygame-time" class="input-cyan" onchange="updatePrice('zygame')">
+                        <option value="35000">1 Ngày - 35.000đ</option>
+                        <option value="55000">3 Ngày - 55.000đ</option>
+                        <option value="85000">7 Ngày - 85.000đ</option>
+                        <option value="130000">30 Ngày - 130.000đ</option>
+                    </select>
+                    <span class="price-tag" id="price-zygame">35.000đ</span>
+                    <button class="btn-cyan" onclick="processBuy('Zygame')">MUA NGAY</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <img src="https://via.placeholder.com/400x200/16213e/7b2cbf?text=DRIP+SILENT" alt="Drip Silent">
+                <div class="p-info">
+                    <h3>Drip Silent</h3>
+                    <select id="drip-time" class="input-cyan" onchange="updatePrice('drip')">
+                        <option value="50000">1 Ngày - 50.000đ</option>
+                        <option value="100000">7 Ngày - 100.000đ</option>
+                        <option value="160000">30 Ngày - 160.000đ</option>
+                    </select>
+                    <span class="price-tag" id="price-drip">50.000đ</span>
+                    <button class="btn-cyan" onclick="processBuy('Drip')">MUA NGAY</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container" id="page-napthe" style="display:none">
+            <div class="auth-box" style="width:100%; max-width: none;">
+                <h3 style="color:var(--primary)">NẠP THẺ CÀO</h3>
+                <select id="card-type" class="input-cyan" onchange="updateRate()">
+                    <option value="Viettel">Viettel (Chiết khấu 13%)</option>
+                    <option value="Vinaphone">Vinaphone (Chiết khấu 10%)</option>
+                    <option value="Mobifone">Mobifone (Chiết khấu 18%)</option>
+                    <option value="Zing">Zing (Chiết khấu 12.5%)</option>
+                    <option value="Garena">Garena (Chiết khấu 12.5%)</option>
+                    <option value="Vcoin">Vcoin (Chiết khấu 13%)</option>
+                </select>
+                <select id="card-amount" class="input-cyan" onchange="updateRate()">
+                    <option value="10000">10.000đ</option>
+                    <option value="20000">20.000đ</option>
+                    <option value="50000">50.000đ</option>
+                    <option value="100000">100.000đ</option>
+                    <option value="200000">200.000đ</option>
+                    <option value="500000">500.000đ</option>
+                </select>
+                <p id="receive-amount" style="color:var(--primary)">Thực nhận: 8.700đ</p>
+                <input type="text" id="seri" class="input-cyan" placeholder="Số Seri">
+                <input type="text" id="pin" class="input-cyan" placeholder="Mã Thẻ">
+                <button class="btn-cyan" onclick="requestNap()">GỬI THẺ</button>
+            </div>
+        </div>
+
+        <div class="container" id="page-admin-panel" style="display:none">
+            <h3>DUYỆT THẺ CHỜ</h3>
+            <div id="list-pending"></div>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_ACC = { u: "shadow+999", p: "HV0308hv" };
+        const RATES = { "Viettel": 0.87, "Vinaphone": 0.90, "Mobifone": 0.82, "Zing": 0.875, "Garena": 0.875, "Vcoin": 0.87 };
+
+        let data = JSON.parse(localStorage.getItem('shadow_shop')) || { currentUser: null, pending: [], users: {} };
+        if (!data.users[ADMIN_ACC.u]) data.users[ADMIN_ACC.u] = { pass: ADMIN_ACC.p, balance: 0, totalSpent: 0, rank: "Admin" };
+        save();
+
+        function save() { localStorage.setItem('shadow_shop', JSON.stringify(data)); }
+
+        function toggleAuth() {
+            const reg = document.getElementById('reg-fields');
+            const isH = reg.style.display === 'none';
+            reg.style.display = isH ? 'block' : 'none';
+            document.getElementById('auth-title').innerText = isH ? 'ĐĂNG KÝ' : 'ĐĂNG NHẬP';
+        }
+
+        function handleAuth() {
+            const u = document.getElementById('user').value.trim(), p = document.getElementById('pass').value.trim();
+            const isReg = document.getElementById('reg-fields').style.display === 'block';
+            if (!u || !p) return alert("Nhập đủ thông tin!");
+            if (isReg) {
+                if (data.users[u]) return alert("Tài khoản đã tồn tại!");
+                data.users[u] = { pass: p, balance: 0, totalSpent: 0 };
+                save(); alert("Đăng ký xong!"); toggleAuth();
+            } else {
+                if (data.users[u]?.pass === p) { data.currentUser = u; save(); login(); } else alert("Sai tài khoản!");
+            }
+        }
+
+        function login() {
+            document.getElementById('auth-ui').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('display-name').innerText = data.currentUser;
+            document.getElementById('admin-menu').style.display = (data.currentUser === ADMIN_ACC.u) ? 'block' : 'none';
+            updateUI(); showPage('home');
+        }
+
+        function updateUI() {
+            const user = data.users[data.currentUser];
+            document.getElementById('top-balance').innerText = user.balance.toLocaleString() + "đ";
+            document.getElementById('panel-balance').innerText = user.balance.toLocaleString() + "đ";
+            document.getElementById('total-recharge').innerText = user.totalSpent.toLocaleString() + "đ";
+        }
+
+        function showPage(p) {
+            ['home', 'napthe', 'admin-panel'].forEach(id => document.getElementById('page-' + id).style.display = (p === id ? 'block' : 'none'));
+            if(p === 'admin-panel') renderPending();
+            document.getElementById('sidebar').classList.remove('active');
+        }
+
+        function updatePrice(type) {
+            const val = document.getElementById(type + '-time').value;
+            document.getElementById('price-' + type).innerText = parseInt(val).toLocaleString() + "đ";
+        }
+
+        function processBuy(name) {
+            const type = name.toLowerCase();
+            const price = parseInt(document.getElementById(type + '-time').value);
+            const user = data.users[data.currentUser];
+            if (user.balance < price) return alert("Không đủ tiền! Hãy nạp thêm.");
+            if (confirm(`Xác nhận mua ${name} giá ${price.toLocaleString()}đ?`)) {
+                user.balance -= price; save(); updateUI(); alert("Mua thành công!");
+            }
+        }
+
+        function updateRate() {
+            const t = document.getElementById('card-type').value, a = parseInt(document.getElementById('card-amount').value);
+            document.getElementById('receive-amount').innerText = `Thực nhận: ${Math.floor(a * RATES[t]).toLocaleString()}đ`;
+        }
+
+        function requestNap() {
+            const t = document.getElementById('card-type').value, a = parseInt(document.getElementById('card-amount').value);
+            const s = document.getElementById('seri').value, p = document.getElementById('pin').value;
+            if(!s || !p) return alert("Nhập đủ mã thẻ!");
+            data.pending.push({ t, a, s, p, user: data.currentUser, rec: Math.floor(a * RATES[t]) });
+            save(); alert("Đã gửi! Chờ duyệt.");
+        }
+
+        function renderPending() {
+            let h = '';
+            data.pending.forEach((it, i) => {
+                h += `<div class="card" style="padding:10px;">${it.user} - ${it.t} ${it.a}đ<br>Mã: ${it.p}<button class="btn-cyan" onclick="approve(${i})">DUYỆT +${it.rec}đ</button></div>`;
+            });
+            document.getElementById('list-pending').innerHTML = h || 'Trống';
+        }
+
+        function approve(i) {
+            const it = data.pending[i];
+            data.users[it.user].balance += it.rec;
+            data.users[it.user].totalSpent += it.rec;
+            data.pending.splice(i, 1); save(); renderPending(); updateUI();
+        }
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        function logout() { data.currentUser = null; save(); location.reload(); }
+        window.onload = () => { if (data.currentUser) login(); updateRate(); };
+    </script>
+</body>
+                  </html>
+                  
